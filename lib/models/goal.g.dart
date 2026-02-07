@@ -1,50 +1,38 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'plan.dart';
+part of 'goal.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class PlanAdapter extends TypeAdapter<Plan> {
+class GoalAdapter extends TypeAdapter<Goal> {
   @override
-  final int typeId = 0;
+  final int typeId = 1;
 
   @override
-  Plan read(BinaryReader reader) {
+  Goal read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Plan(
+    return Goal(
       id: fields[0] as String,
       description: fields[1] as String,
       createdAt: fields[2] as DateTime,
-      title: fields[3] as String?,
-      fromTime: fields[4] as String?,
-      toTime: fields[5] as String?,
-      duration: fields[6] as String?,
     );
   }
 
   @override
-  void write(BinaryWriter writer, Plan obj) {
+  void write(BinaryWriter writer, Goal obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
       ..write(obj.description)
       ..writeByte(2)
-      ..write(obj.createdAt)
-      ..writeByte(3)
-      ..write(obj.title)
-      ..writeByte(4)
-      ..write(obj.fromTime)
-      ..writeByte(5)
-      ..write(obj.toTime)
-      ..writeByte(6)
-      ..write(obj.duration);
+      ..write(obj.createdAt);
   }
 
   @override
@@ -53,7 +41,7 @@ class PlanAdapter extends TypeAdapter<Plan> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PlanAdapter &&
+      other is GoalAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }

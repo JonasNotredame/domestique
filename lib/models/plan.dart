@@ -13,9 +13,25 @@ class Plan {
   @HiveField(2)
   final DateTime createdAt;
 
+  @HiveField(3)
+  final String? title;
+
+  @HiveField(4)
+  final String? fromTime;
+
+  @HiveField(5)
+  final String? toTime;
+
+  @HiveField(6)
+  final String? duration;
+
   Plan({
     required this.id,
     required this.description,
     required this.createdAt,
+    this.title,
+    this.fromTime,
+    this.toTime,
+    this.duration,
   });
 }

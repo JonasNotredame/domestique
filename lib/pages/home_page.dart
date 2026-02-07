@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/plan_storage.dart';
+import '../services/goal_storage.dart';
 import '../models/plan.dart';
+import '../models/goal.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,19 +14,56 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Plan> _todayPlans = [];
+  Goal? _nextGoal;
+  DateTime? _nextGoalDate;
   
   @override
   void initState() {
     super.initState();
-    _loadTodayPlans();
+    _loadTodayData();
   }
 
-  void _loadTodayPlans() {
+  void _loadTodayData() {
     final today = DateTime.now();
+    final currentTime = DateTime.now();
+    final currentMinutes = currentTime.hour * 60 + currentTime.minute;
     
     setState(() {
-      _todayPlans = PlanStorage.loadPlansForDate(today);
+      final allPlans = PlanStorage.loadPlansForDate(today);
+      
+      // Filter to only show plans that haven't ended yet
+      _todayPlans = allPlans.where((plan) {
+        // If there's an end time, check if it hasn't passed yet
+        if (plan.toTime != null) {
+          final endMinutes = _timeToMinutes(plan.toTime!);
+          return endMinutes >= currentMinutes;
+        }
+        // If no end time, check the start time
+        if (plan.fromTime != null) {
+          final startMinutes = _timeToMinutes(plan.fromTime!);
+          return startMinutes >= currentMinutes;
+        }
+        // Show plans without time info
+        return true;
+      }).toList();
+      
+      final nextGoalData = GoalStorage.getNextGoal();
+      if (nextGoalData != null) {
+        _nextGoal = nextGoalData['goal'] as Goal;
+        _nextGoalDate = nextGoalData['date'] as DateTime;
+      } else {
+        _nextGoal = null;
+        _nextGoalDate = null;
+      }
     });
+  }
+
+  int _timeToMinutes(String time) {
+    final parts = time.split(':');
+    if (parts.length != 2) return 0;
+    final hours = int.tryParse(parts[0]) ?? 0;
+    final minutes = int.tryParse(parts[1]) ?? 0;
+    return hours * 60 + minutes;
   }
 
   @override
@@ -85,127 +124,269 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         
-        // Today's Plans Section - Rest of the screen
+        // Today's Overview Section - Rest of the screen
         Expanded(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Today\'s Plans',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '${_todayPlans.length}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: _todayPlans.isEmpty
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.calendar_today_outlined,
-                                size: 64,
-                                color: Colors.grey[300],
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                'No plans for today',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey[600],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Go to Plan tab to add some',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey[500],
-                                ),
-                              ),
-                            ],
-                          ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionHeader(
+                    'Upcoming Today',
+                    _todayPlans.length,
+                    Icons.fitness_center,
+                    Theme.of(context).colorScheme.primary,
+                  ),
+                  const SizedBox(height: 12),
+                  _todayPlans.isEmpty
+                      ? _buildEmptyState(
+                          'No upcoming plans',
+                          'All done for today or visit Plan tab to add more',
+                          Icons.directions_run,
                         )
-                      : ListView.builder(
-                          itemCount: _todayPlans.length,
-                          itemBuilder: (context, index) {
-                            final plan = _todayPlans[index];
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              elevation: 1,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                leading: CircleAvatar(
-                                  backgroundColor: Theme.of(context).colorScheme.primary,
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                title: Text(
-                                  plan.description,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: Text(
-                                    'Added at ${DateFormat('HH:mm').format(plan.createdAt)}',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                ),
-                              ),
+                      : Column(
+                          children: _todayPlans.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final plan = entry.value;
+                            return _buildPlanCard(
+                              context,
+                              plan,
+                              index,
+                              Theme.of(context).colorScheme.primary,
                             );
-                          },
+                          }).toList(),
                         ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Icon(Icons.flag, color: Theme.of(context).colorScheme.secondary, size: 24),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Next Goal',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _nextGoal == null
+                      ? _buildEmptyState(
+                          'No goals',
+                          'Go to Calendar tab to set your goals',
+                          Icons.flag_outlined,
+                        )
+                      : _buildNextGoalCard(
+                          context,
+                          _nextGoal!,
+                          _nextGoalDate!,
+                          Theme.of(context).colorScheme.secondary,
+                        ),
+                ],
+              ),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title, int count, IconData icon, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: color, size: 24),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 6,
+          ),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            '$count',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState(String title, String subtitle, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 48,
+              color: Colors.grey[300],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlanCard(BuildContext context, Plan plan, int index, Color color) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+        leading: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 6,
+          ),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            plan.toTime != null
+                ? '${plan.fromTime ?? "--:--"}\n${plan.toTime}'
+                : plan.fromTime ?? '--:--',
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              height: 1.2,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                plan.title ?? plan.description,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            if (plan.duration != null)
+              Text(
+                plan.duration!,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+          ],
+        ),
+        subtitle: (plan.description.isNotEmpty && plan.description != plan.title)
+            ? Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  plan.description,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[600],
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              )
+            : null,
+      ),
+    );
+  }
+
+  Widget _buildNextGoalCard(BuildContext context, Goal goal, DateTime date, Color color) {
+    final today = DateTime.now();
+    final isToday = date.year == today.year && date.month == today.month && date.day == today.day;
+    final dateStr = isToday ? 'Today' : DateFormat('EEEE, dd MMMM').format(date);
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: color.withOpacity(0.3),
+          width: 2,
+        ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+        leading: CircleAvatar(
+          backgroundColor: color,
+          child: const Icon(
+            Icons.flag,
+            color: Colors.white,
+            size: 20,
+          ),
+        ),
+        title: Text(
+          goal.description,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            dateStr,
+            style: TextStyle(
+              fontSize: 13,
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

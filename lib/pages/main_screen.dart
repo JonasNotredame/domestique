@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../components/app_bar.dart';
 import 'home_page.dart';
 import 'plan_page.dart';
-import 'calendar_page.dart';
+import 'goal_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -19,7 +19,7 @@ class _MainScreenState extends State<MainScreen> {
     return [
       HomeScreen(key: ValueKey(_homeRefreshKey)),
       const PlanScreen(),
-      const CalendarScreen(),
+      const GoalScreen(),
     ];
   }
 
@@ -44,12 +44,12 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
+            icon: Icon(Icons.fitness_center),
             label: 'Plan',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month),
-            label: 'Calendar',
+            icon: Icon(Icons.flag),
+            label: 'Goals',
           ),
         ],
         currentIndex: _selectedIndex,

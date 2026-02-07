@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
-import 'day_detail_page.dart';
-import '../services/plan_storage.dart';
+import 'goal_detail_page.dart';
+import '../services/goal_storage.dart';
 
-class CalendarScreen extends StatefulWidget {
-  const CalendarScreen({super.key});
+class GoalScreen extends StatefulWidget {
+  const GoalScreen({super.key});
 
   @override
-  State<CalendarScreen> createState() => _CalendarScreenState();
+  State<GoalScreen> createState() => _GoalScreenState();
 }
 
-class _CalendarScreenState extends State<CalendarScreen> {
+class _GoalScreenState extends State<GoalScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   int _selectedYear = DateTime.now().year;
@@ -28,7 +28,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DayDetailPage(
+        builder: (context) => GoalDetailPage(
           dayName: dayName,
           dayNumber: date.day,
           date: date,
@@ -40,8 +40,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   int _getEventCount(DateTime day) {
-    final plans = PlanStorage.loadPlansForDate(day);
-    return plans.length;
+    final goals = GoalStorage.loadGoalsForDate(day);
+    return goals.length;
   }
 
   @override
@@ -226,7 +226,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildSelectedDayEvents() {
-    final plans = PlanStorage.loadPlansForDate(_selectedDay!);
+    final goals = GoalStorage.loadGoalsForDate(_selectedDay!);
     final dateStr = DateFormat('EEEE, dd MMMM yyyy').format(_selectedDay!);
 
     return Padding(
@@ -243,7 +243,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            '${plans.length} event(s)',
+            '${goals.length} goal(s)',
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey[600],
@@ -251,19 +251,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: plans.isEmpty
+            child: goals.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.event_busy,
+                          Icons.flag_outlined,
                           size: 48,
                           color: Colors.grey[400],
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'No events',
+                          'No goals',
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey[600],
@@ -273,25 +273,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     ),
                   )
                 : ListView.builder(
-                    itemCount: plans.length,
+                    itemCount: goals.length,
                     itemBuilder: (context, index) {
-                      final plan = plans[index];
+                      final goal = goals[index];
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            child: Text(
-                              '${index + 1}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            backgroundColor: Theme.of(context).colorScheme.secondary,
+                            child: const Icon(
+                              Icons.flag,
+                              color: Colors.white,
+                              size: 20,
                             ),
                           ),
-                          title: Text(plan.description),
+                          title: Text(goal.description),
                           subtitle: Text(
-                            DateFormat('HH:mm').format(plan.createdAt),
+                            DateFormat('HH:mm').format(goal.createdAt),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
