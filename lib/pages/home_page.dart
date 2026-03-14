@@ -6,7 +6,9 @@ import '../models/plan.dart';
 import '../models/goal.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onBackToOverview;
+
+  const HomeScreen({super.key, this.onBackToOverview});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -87,35 +89,54 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           child: SafeArea(
-            child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Welcome to',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w300,
-                    ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: widget.onBackToOverview == null
+                        ? const SizedBox(height: 48)
+                        : IconButton(
+                            onPressed: widget.onBackToOverview,
+                            icon: const Icon(Icons.arrow_back, color: Colors.white),
+                            tooltip: 'Back to Overview',
+                          ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Domestique',
-                    style: TextStyle(
-                      fontSize: 42,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    dateStr,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w300,
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Welcome to',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Domestique',
+                            style: TextStyle(
+                              fontSize: 42,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            dateStr,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

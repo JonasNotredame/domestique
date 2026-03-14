@@ -84,7 +84,8 @@ class _WeekDetailPageState extends State<WeekDetailPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 _weekDays[index],
@@ -94,11 +95,11 @@ class _WeekDetailPageState extends State<WeekDetailPage> {
                                   color: isToday ? Colors.deepPurple.shade900 : null,
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(height: 2),
                               Text(
-                                '${date.day}',
+                                dateStr,
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 13,
                                   color: isToday ? Colors.deepPurple.shade700 : Colors.grey[600],
                                 ),
                               ),

@@ -1,23 +1,31 @@
 import 'package:flutter/material.dart';
-import '../components/app_bar.dart';
 import 'home_page.dart';
 import 'plan_page.dart';
 import 'goal_page.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final int initialTab;
+
+  const MainScreen({super.key, this.initialTab = 0});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
   int _homeRefreshKey = 0;
 
   List<Widget> get _pages {
     return [
-      HomeScreen(key: ValueKey(_homeRefreshKey)),
+      HomeScreen(
+        key: ValueKey(_homeRefreshKey),
+        onBackToOverview: () {
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          }
+        },
+      ),
       const PlanScreen(),
       const GoalScreen(),
     ];
@@ -34,10 +42,17 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialTab;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
